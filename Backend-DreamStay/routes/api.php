@@ -15,5 +15,7 @@ use App\Http\Controllers\{
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
-Route::post('/register', [UserController::class, 'register']);
+Route::middleware(['api'])->group(function () {
+   Route::post('/register', [UserController::class, 'register']);
+   Route::post('/login', [UserController::class, 'login']);
+});

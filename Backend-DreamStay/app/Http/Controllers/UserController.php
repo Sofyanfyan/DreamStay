@@ -7,10 +7,18 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
 use Exception;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class UserController extends Controller
 {
+
+   public function __construct()
+   {
+         $this->middleware('auth:api', ['except' => ['login', 'register']]);//login, register methods won't go through the api guard
+   }
+
    public function register (Request $request)
    {
       try {
@@ -46,9 +54,46 @@ class UserController extends Controller
 
       } catch (Exception $error) {
          
-         echo $error;
          $errorHandler = new ErrorHandlerController;
          return $errorHandler->message();
       }
    }
+
+
+   public function login (Request $request)
+   {
+      try {
+         
+         $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required|string|min:6',
+         ]);
+         if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+         }
+
+         $credentials = $request->only('email', 'password');
+         $check = Auth::attempt($credentials);
+
+         if (!$check) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+         }
+         
+         $user = Auth::user();
+         return response()->json([
+               'user' => $user,
+               'authorization' => [
+                  'token' => 'belom di handle',
+                  'type' => 'bearer',
+               ]
+         ]);
+
+      } catch (Exception $e) {
+         
+         return response()->json([
+            'error' => $e
+         ]);
+      }
+   }
+
 }
