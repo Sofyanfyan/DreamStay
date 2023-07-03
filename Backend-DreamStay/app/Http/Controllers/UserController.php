@@ -10,14 +10,11 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
 class UserController extends Controller
 {
-
-   public function __construct()
-   {
-         $this->middleware('auth:api', ['except' => ['login', 'register']]);//login, register methods won't go through the api guard
-   }
 
    public function register (Request $request)
    {
@@ -99,4 +96,16 @@ class UserController extends Controller
       }
    }
 
+   public function logout () 
+   {
+      $removeToken = JWTAuth::invalidate(JWTAuth::getToken());
+
+      if($removeToken) {
+            //return response JSON
+            return response()->json([
+               'success' => true,
+               'message' => 'Logout Berhasil!',  
+            ]);
+      }
+   }
 }
