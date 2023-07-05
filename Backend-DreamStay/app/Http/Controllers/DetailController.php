@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ErrorHandlerController;
 use Exception;
+use Illuminate\Filesystem\AwsS3V3Adapter;
 use Illuminate\Support\Facades\DB;
 
 class DetailController extends Controller
@@ -78,5 +79,43 @@ class DetailController extends Controller
          return $errorHandler->message($err);
       }
 
+   }
+
+   public function update(Request $request)
+   {
+      $errorHandler = new ErrorHandlerController;
+      
+      try {
+         
+         $id = $request->id;
+         $rules = $request->only(['body']);
+
+         if(!Detail::where('id', $id)->first())
+         {
+            return $errorHandler->message("Id detail with $request->id not found!", 404 );
+         }
+
+         $validator = Validator::make($rules, [
+            'body' => 'required',
+         ]);
+
+         if($validator->fails()){
+            
+            return $errorHandler->message($validator->errors(), 400);
+
+         }
+
+         $update = Detail::where('id', $id)->update([
+            'body' => $request->body,
+         ]);
+
+         return response()->json([
+            "message" => "Success update detail with id $id"
+         ], 201);
+         
+
+      } catch (Exception $err) {
+         return $errorHandler->message($err);
+      }
    }
 }
