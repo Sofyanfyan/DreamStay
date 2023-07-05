@@ -3,7 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
-   UserController
+   UserController,
+   DetailController,
 };
 /*
 |--------------------------------------------------------------------------
@@ -16,6 +17,14 @@ use App\Http\Controllers\{
 |
 */
 Route::middleware(['api'])->group(function () {
+   
    Route::post('/register', [UserController::class, 'register']);
    Route::post('/login', [UserController::class, 'login']);
+   Route::post('/logout', [UserController::class, 'logout']);
+   
+   Route::prefix('details')->group(function () {
+      Route::post('/', [DetailController::class, 'create']);
+      Route::get('/', [DetailController::class, 'getAllDetail']);
+      Route::get('/{id}', [DetailController::class, 'getById']);
+   });
 });
