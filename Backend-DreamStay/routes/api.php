@@ -24,5 +24,7 @@ Route::middleware(['api'])->group(function () {
    
    Route::prefix('details')->group(function () {
       Route::post('/', [DetailController::class, 'create']);
+      Route::get('/', [DetailController::class, 'getAllDetail']);
+      Route::get('/{id}', [DetailController::class, 'getById']);
    });
 });
