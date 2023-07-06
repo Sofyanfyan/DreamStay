@@ -22,10 +22,14 @@ Route::middleware(['api'])->group(function () {
    Route::post('/login', [UserController::class, 'login']);
    Route::post('/logout', [UserController::class, 'logout']);
    
-   Route::prefix('details')->group(function () {
-      Route::post('/', [DetailController::class, 'create']);
-      Route::get('/', [DetailController::class, 'getAllDetail']);
-      Route::get('/{id}', [DetailController::class, 'getById']);
-      Route::put('/{id}', [DetailController::class, 'update']);
+   Route::middleware('admin')->group(function() {
+      Route::prefix('details')->group(function () {
+         Route::post('/', [DetailController::class, 'create']);
+         Route::get('/', [DetailController::class, 'getAllDetail']);
+         Route::get('/{id}', [DetailController::class, 'getById']);
+         Route::put('/{id}', [DetailController::class, 'update']);
+         Route::delete('/{id}', [DetailController::class, 'destroy']);
+      });
    });
+
 });

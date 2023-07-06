@@ -105,7 +105,7 @@ class DetailController extends Controller
 
          }
 
-         $update = Detail::where('id', $id)->update([
+         Detail::where('id', $id)->update([
             'body' => $request->body,
          ]);
 
@@ -114,6 +114,30 @@ class DetailController extends Controller
          ], 201);
          
 
+      } catch (Exception $err) {
+         return $errorHandler->message($err);
+      }
+   }
+
+   public function destroy(Request $request)
+   {
+
+      $errorHandler = new ErrorHandlerController;
+
+      try {
+         
+         $id = $request->id;
+
+         if(!Detail::where('id', $id)->first())
+         {
+            return $errorHandler->message("Id detail with $request->id not found!", 404 );
+         }
+
+         Detail::where('id', $id)->delete();
+
+         return response()->json([
+            "message" => "Success delete detail with id $id"
+         ], 201);
       } catch (Exception $err) {
          return $errorHandler->message($err);
       }
