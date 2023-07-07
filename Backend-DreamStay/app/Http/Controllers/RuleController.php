@@ -8,7 +8,7 @@ use App\Http\Controllers\ErrorHandlerController;
 use App\Models\Rule;
 use Exception;
 use Illuminate\Support\Facades\DB;
-
+use Intervention\Image\Facades\Image;
 class RuleController extends Controller
 {
    
@@ -32,12 +32,13 @@ class RuleController extends Controller
          }
 
          $iconName = str_replace(" ", "_", $request->body);
+         $image = Image::make($request->file('icon'));
 
-         $icon = $this->uploadImage($request, $iconName);
+         $icon = $this->uploadImage($request, $iconName, $image);
 
          $create = Rule::create([
             "icon" => $icon,
-            "body" => $iconName
+            "body" => $request->body
          ]);
 
          return response()->json(["message" => "success create rules", "rules" => $create], 201);
@@ -48,14 +49,14 @@ class RuleController extends Controller
 
    }
 
-   private function uploadImage($request, $iconName)
+   private function uploadImage($request, $iconName, $image)
    {
       $fileName = time() . '_' . 'icon' . '_' . $iconName . '.' . $request->icon->extension();
-
-      //public folder
-
-      $request->icon->move(public_path('images/rules'), $fileName);
-
+      $image->resize(800, 800, function($constraint) {
+         $constraint->aspectRatio();
+      });
+      $image->save(public_path('images/rules/' . $fileName));
+      
       return env("APP_URL") .'/images/rules/' . $fileName;
    }
 }
