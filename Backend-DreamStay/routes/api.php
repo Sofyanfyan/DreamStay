@@ -34,6 +34,7 @@ Route::middleware(['api'])->group(function () {
       });
       Route::prefix('rules')->group(function () {
          Route::post('/', [RuleController::class, 'create']);
+         Route::get('/', [RuleController::class, 'allRules']);
       });
    });
 

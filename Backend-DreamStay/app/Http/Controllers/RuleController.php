@@ -43,10 +43,25 @@ class RuleController extends Controller
 
          return response()->json(["message" => "success create rules", "rules" => $create], 201);
       } catch (Exception $err) {
-            echo $err;
             return $errorHandler->message("Internal server error");
       }
 
+   }
+
+   public function allRules()
+   {
+      $errorHandler = new ErrorHandlerController;
+
+
+      try {
+         
+         $data = DB::table('rules')->orderBy('created_at', 'desc')->get();
+
+         return response()->json($data);
+
+      } catch (Exception $err) {
+         return $errorHandler->message("Internal server error");
+      }
    }
 
    private function uploadImage($request, $iconName, $image)
