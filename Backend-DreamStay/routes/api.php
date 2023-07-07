@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
    UserController,
    DetailController,
+   RuleController,
 };
 /*
 |--------------------------------------------------------------------------
@@ -22,13 +23,17 @@ Route::middleware(['api'])->group(function () {
    Route::post('/login', [UserController::class, 'login']);
    Route::post('/logout', [UserController::class, 'logout']);
    
-   Route::middleware('admin')->group(function() {
+   Route::middleware('admin.auth')->group(function() {
       Route::prefix('details')->group(function () {
          Route::post('/', [DetailController::class, 'create']);
          Route::get('/', [DetailController::class, 'getAllDetail']);
          Route::get('/{id}', [DetailController::class, 'getById']);
          Route::put('/{id}', [DetailController::class, 'update']);
          Route::delete('/{id}', [DetailController::class, 'destroy']);
+
+      });
+      Route::prefix('rules')->group(function () {
+         Route::post('/', [RuleController::class, 'create']);
       });
    });
 

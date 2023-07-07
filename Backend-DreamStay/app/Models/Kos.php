@@ -28,4 +28,7 @@ class Kos extends Model
       'user_id',
       'book_id',
    ];
+
+
+   
 }

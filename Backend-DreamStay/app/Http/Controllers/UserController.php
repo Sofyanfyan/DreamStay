@@ -72,8 +72,9 @@ class UserController extends Controller
          $credentials = $request->only('email', 'password');
          $checkCredentials = Auth::attempt($credentials);
 
-         $token = auth()->guard('api')->attempt($credentials);
+         // $token = auth()->guard('api')->attempt($credentials);
 
+         $token = Auth::guard('api')->attempt($credentials);
          if (!$checkCredentials) {
             return response()->json(['error' => 'Wrong email/password'], 401);
          }
