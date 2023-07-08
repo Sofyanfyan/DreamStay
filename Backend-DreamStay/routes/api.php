@@ -35,6 +35,8 @@ Route::middleware(['api'])->group(function () {
       Route::prefix('rules')->group(function () {
          Route::post('/', [RuleController::class, 'create']);
          Route::get('/', [RuleController::class, 'allRules']);
+         Route::get('/{id}', [RuleController::class, 'getByIdRules']);
+         Route::delete('/{id}', [RuleController::class, 'destroy']);
       });
    });
 
