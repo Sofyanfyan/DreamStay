@@ -117,6 +117,53 @@ class RuleController extends Controller
          return $errorHandler->message('Internal server error');
       }
    }
+
+   public function updateRules(Request $request)
+   {
+
+      $errorHandler = new ErrorHandlerController;
+
+      try {
+         
+         $id = $request->id;
+
+         if(!Rule::where('id', $id)->first())
+         {
+            return $errorHandler->message("Rules with id $id not found", 404);
+         }
+
+
+         $rules = $request->only(['icon', 'body']);
+         
+         $validator = Validator::make($rules, [
+            'icon' => 'required|image|mimes:jpg,png,jpeg',
+            'body' => 'required|max:20',
+         ]);
+
+         if($validator->fails())
+         {
+            return $errorHandler->message($validator->errors(), 400);
+         }
+
+         $del = Rule::where('id', $id)->first();
+         $iconName = str_replace(" ", "_", $request->body);
+         $image = Image::make($request->file('icon'));
+         
+         $this->deleteImage($del);
+         $icon = $this->uploadImage($request, $iconName, $image);
+
+         DB::table('rules')->where('id', $id)->update([
+            'icon' => $icon,
+            'body' => $request->body,
+         ]);
+
+         return response()->json(["message" => "Success update rules with id $id"]);
+
+      } catch (Exception $err) {
+         //throw $th;
+         return $errorHandler->message($validator->errors(), 400);
+      }
+   }
    
    private function uploadImage($request, $iconName, $image)
    {
