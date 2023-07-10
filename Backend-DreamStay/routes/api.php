@@ -5,7 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
    UserController,
    DetailController,
-   RuleController,
+    KosController,
+    RuleController,
 };
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +39,10 @@ Route::middleware(['api'])->group(function () {
          Route::get('/{id}', [RuleController::class, 'getByIdRules']);
          Route::delete('/{id}', [RuleController::class, 'destroy']);
          Route::put('/{id}', [RuleController::class, 'updateRules']);
+      });
+
+      Route::prefix('kos')->group(function () {
+         Route::post('/', [KosController::class, 'create']);
       });
    });
 
