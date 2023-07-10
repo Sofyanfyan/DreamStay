@@ -15,8 +15,8 @@ class Rule extends Model
       'body',
     ];
 
-    public function kos_rule()
+   public function kos()
    {
-      $this->hasMany(Kos_rule::class);
+      $this->belongsToMany(Kos::class, 'kos_rules');
    }
 }
