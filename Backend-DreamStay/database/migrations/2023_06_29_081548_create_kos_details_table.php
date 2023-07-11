@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('kos_details', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('kos_id');
-            $table->foreign('kos_id')->references('id')->on('koses')->cascadeOnDelete();
+            $table->foreign('kos_id')->references('id')->on('kos')->cascadeOnDelete();
             $table->unsignedBigInteger('detail_id');
             $table->foreign('detail_id')->references('id')->on('details')->cascadeOnDelete();
             $table->timestamps();
