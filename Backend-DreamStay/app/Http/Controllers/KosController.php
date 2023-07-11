@@ -115,6 +115,20 @@ class KosController extends Controller
       }
    }
 
+   public function all()
+   {
+      $errorHandler = new ErrorHandlerController;
+
+      try {
+         //code...
+
+         $data = Kos::with(['rule', 'detail'])->get();
+         return response()->json(['data' => $data], 200);
+      } catch (Exception $err) {
+         
+         $errorHandler->message('Internal server error');
+      }
+   }
 
    private function uploadImage($request, $iconName, $image)
    {

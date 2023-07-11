@@ -43,6 +43,7 @@ Route::middleware(['api'])->group(function () {
 
       Route::prefix('kos')->group(function () {
          Route::post('/', [KosController::class, 'create']);
+         Route::get('/', [KosController::class, 'all']);
       });
    });
 
