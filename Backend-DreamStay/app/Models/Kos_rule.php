@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Kos_rule extends Model
 {
    use HasFactory;
+
+   protected $fillable = [
+      "rule_id",
+      "kos_id"
+   ];
 }

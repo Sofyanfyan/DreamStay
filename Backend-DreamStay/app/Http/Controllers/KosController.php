@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ErrorHandlerController;
 use App\Models\Kos;
+use App\Models\Kos_detail;
+use App\Models\Kos_rule;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +20,8 @@ class KosController extends Controller
    public function create(Request $request)
    {
       $errorHandler = new ErrorHandlerController;
+
+      DB::beginTransaction();
       
       try {
 
@@ -34,6 +38,8 @@ class KosController extends Controller
             'lebar' => 'required|integer',
             'panjang' => 'required|integer',
             'whatsapp_owner' => 'required|min:11|max:13',
+            'rule_id' => 'required|integer',
+            'detail_id' => 'required|integer',
             'foto_kamar1' => 'image|mimes:jpeg,png,jpg,gif',
             'foto_dapur' => 'image|mimes:jpeg,png,jpg,gif',
             'user_id' => 'integer',
@@ -42,6 +48,7 @@ class KosController extends Controller
 
          if($validator->fails())
          {
+            DB::rollBack();
             return $errorHandler->message($validator->errors(), 400);
          }
 
@@ -106,10 +113,27 @@ class KosController extends Controller
 
          
          $create = Kos::create($arrCreate);
+         
+         $kosRule = Kos_rule::create([
+            "rule_id" => $request->rule_id ? $request->rule_id : null,
+            "kos_id" => $create->id,
+         ]);   
+
+
+         $kosDetail = Kos_detail::create([
+            "detail_id" => $request->detail_id ? $request->detail_id : null,
+            "kos_id" => $create->id,
+         ]);
+
+         $create->detail = $kosDetail;
+         $create->rule = $kosRule;
+
+         DB::commit();
          return response()->json(['messages' => "create success", "data" => $create], 201);
          
       } catch (Exception $err) {
          //throw $th;
+         DB::rollBack();
          echo $err;
          return $errorHandler->message('Internal server error');
       }
@@ -129,6 +153,30 @@ class KosController extends Controller
          $errorHandler->message('Internal server error');
       }
    }
+
+
+   public function kosId(Request $request)
+   {
+      $errorHandler = new ErrorHandlerController;
+
+      try {
+         //code...
+         $id = $request->id;
+
+         if(!Kos::where('id', $id)->first())
+         {
+            return $errorHandler->message("Kos with id $id not found!", 404);
+         }
+
+         $data = Kos::where('id', $id)->with(['rule', 'detail'])->first();
+
+         return response()->json(['data' => $data]);
+      } catch (Exception $err) {
+         //throw $th;
+         return $errorHandler->message($err);      
+      }
+   }
+   
 
    private function uploadImage($request, $iconName, $image)
    {
