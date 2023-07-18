@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\File;
 
 class KosController extends Controller
 {
@@ -146,7 +147,7 @@ class KosController extends Controller
       try {
          //code...
 
-         $data = Kos::with(['rule', 'detail'])->get();
+         $data = Kos::with(['rule', 'detail'])->orderBy('id', "desc")->get();
          return response()->json(['data' => $data], 200);
       } catch (Exception $err) {
          
@@ -177,6 +178,73 @@ class KosController extends Controller
       }
    }
    
+   public function deleteKos(Request $request)
+   {
+
+      $errorHandler = new ErrorHandlerController;
+
+      DB::beginTransaction();
+
+      try {
+         //code...
+         $id = $request->id;
+         $data = Kos::where('id', $id)->first();
+
+         if(!$data)
+         {
+            DB::rollBack();
+            return $errorHandler->message("Kos with id $id not found!", 404);
+         }
+         
+
+         DB::table('kos')->where('id', $id)->delete();
+         DB::table('kos_rules')->where('kos_id', $id)->delete();
+         DB::table('kos_details')->where('id', $id)->delete();
+
+         $this->deleteImage($data->foto_kamar);
+         $this->deleteImage($data->foto_kamar_mandi);
+   
+         if($data->foto_kamar1) $this->deleteImage($data->foto_kamar1);
+         if($data->foto_dapur) $this->deleteImage($data->foto_dapur);
+   
+
+         DB::commit();
+
+         return response()->json(["message" => "Success delete kos with id $id"]);
+
+      } catch (Exception $err) {
+
+         DB::rollBack();
+         return $errorHandler->message("Internal server error!"); 
+      }
+
+   }
+
+
+   public function updateKos(Request $request)
+   {
+      $errorHandler = new ErrorHandlerController;
+
+      DB::beginTransaction();
+      try {
+         //code...
+
+         $id = $request->id;
+      
+         if(Kos::where('id', $id))
+         {
+            $errorHandler->message("Kos with id with $id not found!", 404);
+         }
+
+         
+
+         return response()->json(['message' => "lolos"]);
+         
+         } catch (Exception $err) {
+         //throw $th;
+         
+      }
+   }
 
    private function uploadImage($request, $iconName, $image)
    {
@@ -190,5 +258,22 @@ class KosController extends Controller
       $production = env("APP_URL").'/images/kos/' . $fileName;
 
       return env("APP_ENV") == "local" ? $local : $production;
+   }
+
+
+   private function deleteImage($path)
+   {
+      
+      // $path = $data->icon;
+
+      if($path)
+      {
+         $customPath = explode("/",$path);
+         $imagePath = $customPath[sizeof($customPath) - 3] . "/" . $customPath[sizeof($customPath) - 2] . "/" . $customPath[sizeof($customPath) - 1];
+         if(File::exists(public_path($imagePath))){
+            File::delete(public_path($imagePath));
+         }
+      }
+      
    }
 }

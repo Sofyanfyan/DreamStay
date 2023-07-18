@@ -45,6 +45,8 @@ Route::middleware(['api'])->group(function () {
          Route::post('/', [KosController::class, 'create']);
          Route::get('/', [KosController::class, 'all']);
          Route::get('/{id}', [KosController::class, 'kosId']);
+         Route::delete('/{id}', [KosController::class, 'deleteKos']);
+         Route::put('/{id}', [KosController::class, 'updateKos']);
       });
    });
 
