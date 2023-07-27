@@ -11,15 +11,10 @@ use Symfony\Component\CssSelector\Node\FunctionNode;
 
 class Kos_detail extends Model
 {
-    use HasFactory;
+      use HasFactory;
 
-   public function detail()
-   {
-      return $this->belongsTo(Detail::class);
-   } 
-
-   public function kos()
-   {
-      return $this->belongsTo(Kos::class);
-   }
+      protected $fillable = [
+         "detail_id",
+         "kos_id"
+      ];
 }

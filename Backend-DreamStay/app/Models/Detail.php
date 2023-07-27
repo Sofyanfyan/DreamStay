@@ -20,6 +20,6 @@ class Detail extends Model
 
    public function kos_detail()
    {
-      return $this->hasMany(Kos_detail::class);
+      return $this->belongsToMany(Kos::class, 'kos_details');
    }
 }

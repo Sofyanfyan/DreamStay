@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
    UserController,
    DetailController,
+    KosController,
+    RuleController,
 };
 /*
 |--------------------------------------------------------------------------
@@ -22,13 +24,29 @@ Route::middleware(['api'])->group(function () {
    Route::post('/login', [UserController::class, 'login']);
    Route::post('/logout', [UserController::class, 'logout']);
    
-   Route::middleware('admin')->group(function() {
+   Route::middleware('admin.auth')->group(function() {
       Route::prefix('details')->group(function () {
          Route::post('/', [DetailController::class, 'create']);
          Route::get('/', [DetailController::class, 'getAllDetail']);
          Route::get('/{id}', [DetailController::class, 'getById']);
          Route::put('/{id}', [DetailController::class, 'update']);
          Route::delete('/{id}', [DetailController::class, 'destroy']);
+
+      });
+      Route::prefix('rules')->group(function () {
+         Route::post('/', [RuleController::class, 'create']);
+         Route::get('/', [RuleController::class, 'allRules']);
+         Route::get('/{id}', [RuleController::class, 'getByIdRules']);
+         Route::delete('/{id}', [RuleController::class, 'destroy']);
+         Route::put('/{id}', [RuleController::class, 'updateRules']);
+      });
+
+      Route::prefix('kos')->group(function () {
+         Route::post('/', [KosController::class, 'create']);
+         Route::get('/', [KosController::class, 'all']);
+         Route::get('/{id}', [KosController::class, 'kosId']);
+         Route::delete('/{id}', [KosController::class, 'deleteKos']);
+         Route::post('/{id}', [KosController::class, 'ubahKos']);
       });
    });
 

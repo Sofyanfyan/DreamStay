@@ -28,4 +28,20 @@ class Kos extends Model
       'user_id',
       'book_id',
    ];
+
+
+   public function user()
+   {
+      return $this->hasOne(User::class);
+   }
+
+   public function rule()
+   {
+      return $this->belongsToMany(Rule::class, 'kos_rules');
+   }
+
+   public function detail()
+   {
+      return $this->belongsToMany(Detail::class, 'kos_details');
+   }
 }
