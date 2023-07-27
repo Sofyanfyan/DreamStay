@@ -7,6 +7,7 @@ use App\Http\Controllers\ErrorHandlerController;
 use App\Models\Kos;
 use App\Models\Kos_detail;
 use App\Models\Kos_rule;
+use App\Models\Rule;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -221,7 +222,7 @@ class KosController extends Controller
    }
 
 
-   public function updateKos(Request $request)
+   public function ubahKos(Request $request)
    {
       $errorHandler = new ErrorHandlerController;
 
@@ -230,18 +231,145 @@ class KosController extends Controller
          //code...
 
          $id = $request->id;
-      
-         if(Kos::where('id', $id))
+         $data = Kos::where('id', $id)->with('rule', 'detail')->first();
+         if(!$data)
          {
             $errorHandler->message("Kos with id with $id not found!", 404);
          }
 
-         
+         $validator = Validator::make($request->all(), [
+            'type' => 'required|string|in:A,B,C',
+            'biaya' => 'required|integer|min:100000',
+            'termasuk_listrik' => 'required|boolean',
+            'foto_kamar' => 'required|image|mimes:jpeg,png,jpg,gif',
+            'foto_kamar_mandi' => 'required|image|mimes:jpeg,png,jpg,gif',
+            'fasilitas_kamar' => 'required|string',
+            'fasilitas_kamar_mandi' => 'required|string',
+            'fasilitas_dapur' => 'required|string',
+            'lantai' => 'required|integer',
+            'lebar' => 'required|integer',
+            'panjang' => 'required|integer',
+            'whatsapp_owner' => 'required|min:11|max:13',
+            'rule_id' => 'required|integer',
+            'detail_id' => 'required|integer',
+            'foto_kamar1' => 'image|mimes:jpeg,png,jpg,gif',
+            'foto_dapur' => 'image|mimes:jpeg,png,jpg,gif',
+            'user_id' => 'integer',
+            'book_id' => 'integer',
+         ]);
 
-         return response()->json(['message' => "lolos"]);
+
+         if($validator->fails())
+         {
+            return response()->json($validator->errors(), 400);
+         }
+
+         if($request->user_id)
+         {
+            if(!User::where('id', $request->user_id)->first())
+            {
+               
+               return $errorHandler->message("User with id " . $request->user_id . " not found!", 404);
+            }
+         }
+         
+         if($request->book_id)
+         {
+            if(!DB::table('books')->where('id', $request->book_id)->first())
+            {
+               return $errorHandler->message("Book with id " . $request->book_id . " not found!", 404);
+            }
+         }
+
+
+         if($request->rule_id)
+         {
+            if(!Rule::where('id', $request->rule_id)->first())
+            {
+               
+               return $errorHandler->message("Rule with id " . $request->rule_id . " not found!", 404);
+            }
+         }
+         
+         if($request->book_id)
+         {
+            if(!DB::table('details')->where('id', $request->book_id)->first())
+            {
+               return $errorHandler->message("Book with id " . $request->book_id . " not found!", 404);
+            }
+         }
+
+         $this->deleteImage($data->foto_kamar);
+         $this->deleteImage($data->foto_kamar_mandi);
+         $data->foto_kamar1 ? $this->deleteImage($data->foto_kamar1) : null;
+         $data->foto_dapur ? $this->deleteImage($data->foto_dapur) : null;
+
+         $image_foto_kamar = Image::make($request->file('foto_kamar'));
+         $foto_kamar = $this->uploadImage($request, 'foto_kamar', $image_foto_kamar);
+         
+         $image_foto_kamar_mandi = Image::make($request->file('foto_kamar_mandi'));
+         $foto_kamar_mandi = $this->uploadImage($request, 'foto_kamar_mandi', $image_foto_kamar_mandi);
+
+         $foto_kamar1 = false;
+         $foto_dapur = false;
+
+         if($request->foto_kamar1)
+         {
+            $image_foto_kamar1 = Image::make($request->file('foto_kamar1'));
+            $foto_kamar1 = $this->uploadImage($request, 'foto_kamar1', $image_foto_kamar1);
+         }
+
+         if($request->foto_dapur)
+         {
+            $image_foto_dapur = Image::make($request->file('foto_dapur'));
+            $foto_dapur = $this->uploadImage($request, 'foto_dapur', $image_foto_dapur);
+         }
+
+         $arrUpdate = [
+            'type' => $request->type,
+            'biaya' => $request->biaya,
+            'termasuk_listrik' => $request->termasuk_listrik,
+            'foto_kamar' => $foto_kamar,
+            'foto_kamar_mandi' => $foto_kamar_mandi,
+            'fasilitas_kamar' => $request->fasilitas_kamar,
+            'fasilitas_kamar_mandi' => $request->fasilitas_kamar_mandi,
+            'fasilitas_dapur' => $request->fasilitas_dapur,
+            'lantai' => $request->lantai,
+            'lebar' => $request->lebar,
+            'panjang' => $request->panjang,
+            'whatsapp_owner' => $request->whatsapp_owner,
+            'foto_kamar1' => $foto_kamar1 ? $foto_kamar1 : null,
+            'foto_dapur' => $foto_dapur ? $foto_dapur : null,
+            'user_id' => $request->user_id ? $request->user_id : null,
+            'book_id' => $request->book_id ? $request->book_id : null,
+         ];
+   
+         Kos::where('id', $id)->update($arrUpdate);
+
+         $rule_id = Kos_rule::where('kos_id', $data->id)->where('rule_id', $data->rule[0]->id)->first();
+         $detail_id = Kos_detail::where('kos_id', $data->id)->where('detail_id', $data->detail[0]->id)->first();
+
+         DB::table('kos_rules')->where('id', $rule_id->id)->update([
+            "rule_id" => $request->rule_id ? $request->rule_id : null,
+            "kos_id" => $data->id,
+         ]);   
+
+
+         DB::table('kos_details')->where('id', $detail_id->id)->update([
+            "detail_id" => $request->detail_id ? $request->detail_id : null,
+            "kos_id" => $data->id,
+         ]);
+
+         $objUpdate = (object) $arrUpdate;
+
+         DB::commit();
+
+         return response()->json(['update' => $objUpdate], 202);
          
          } catch (Exception $err) {
-         //throw $th;
+            
+            DB::rollBack();
+            return $errorHandler->message("Internal server error", 500);
          
       }
    }
