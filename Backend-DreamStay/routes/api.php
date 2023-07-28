@@ -6,6 +6,7 @@ use App\Http\Controllers\{
    UserController,
    DetailController,
     KosController,
+    RequestController,
     RuleController,
 };
 /*
@@ -50,4 +51,11 @@ Route::middleware(['api'])->group(function () {
       });
    });
 
+   Route::middleware('client.auth')->group(function () {
+
+      Route::prefix('request')->group(function () {
+
+         Route::post('/kosan', [RequestController::class, 'createReqKos']);
+      });
+   });
 });
