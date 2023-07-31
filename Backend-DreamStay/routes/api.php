@@ -56,6 +56,7 @@ Route::middleware(['api'])->group(function () {
       Route::prefix('request')->group(function () {
 
          Route::post('/kosan', [RequestController::class, 'createReqKos']);
+         Route::get('/list', [RequestController::class, 'getAllRequest'])->middleware('admin.auth');
       });
    });
 });

@@ -15,18 +15,12 @@ class Request extends Model
    
    public function kos() 
    {
-      return $this->belongsToMany(Kos::class, 'kos_id');
-   }
-
-
-   public function request()
-   {
-      return $this->belongsToMany(Request::class, 'request_id');
+      return $this->belongsToMany(Kos::class, 'kos_requests');
    }
 
 
    public function user()
    {
-      return $this->belongsToMany(User::class, 'user_id');
+      return $this->belongsToMany(User::class, 'kos_requests');
    }
 }
