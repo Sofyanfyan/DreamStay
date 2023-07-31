@@ -6,6 +6,7 @@ use App\Http\Controllers\{
    UserController,
    DetailController,
     KosController,
+    RequestController,
     RuleController,
 };
 /*
@@ -46,8 +47,16 @@ Route::middleware(['api'])->group(function () {
          Route::get('/', [KosController::class, 'all']);
          Route::get('/{id}', [KosController::class, 'kosId']);
          Route::delete('/{id}', [KosController::class, 'deleteKos']);
-         Route::put('/{id}', [KosController::class, 'updateKos']);
+         Route::post('/{id}', [KosController::class, 'ubahKos']);
       });
    });
 
+   Route::middleware('client.auth')->group(function () {
+
+      Route::prefix('request')->group(function () {
+
+         Route::post('/kosan', [RequestController::class, 'createReqKos']);
+         Route::get('/list', [RequestController::class, 'getAllRequest'])->middleware('admin.auth');
+      });
+   });
 });
